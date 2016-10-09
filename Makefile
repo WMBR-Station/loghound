@@ -15,6 +15,6 @@ LogHound.dmg: LogHound.app dist
 	hdiutil create -imagekey zlib-level=9 -srcfolder dist/LogHound.app dist/LogHound.dmg
 
 clean:
-	rm -rf dist build
+	rm -rf *.pyc dist build
 	cd icons; make clean
 

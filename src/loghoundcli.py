@@ -42,13 +42,21 @@ def generateLogs(argv, printcmd, location="./"):
   import model
   import json
   
-  if True:
+  show_data = "web"
+  
+  if show_data == "web":
     printcmd("Downloading schedule...")
     sched_raw = unicode(urllib.urlopen('http://www.wmbr.org/~lowe/templogs.php?start_year=%d&start_month=%d&start_day=%d&num_days=%d' % (year,month,day,numdays)).read(), "iso-8859-1")
     printcmd("Done.\n")
-  else:
+  
+  elif show_data == "web-local": 
+    printcmd("Downloading schedule...")
+    sched_raw = unicode(urllib.urlopen('http://localhost/templogs.php?start_year=%d&start_month=%d&start_day=%d&num_days=%d' % (year,month,day,numdays)).read(), "iso-8859-1")
+    printcmd("Done.\n")
+
+  elif show_data == "local":
     printcmd("Using cached schedule (probably not what you want)...")
-    sched_raw = "".join(codecs.open("templogs_sample", "r", "iso-8859-1" ).readlines())
+    sched_raw = "".join(codecs.open("sched/templogs_sample", "r", "iso-8859-1" ).readlines())
     printcmd("Done.\n")
   
   timestrtodelta = lambda timestr: datetime.timedelta(0, sum(map(lambda x,y: int(x)*y, timestr.split(":"), [60*60,60])))
