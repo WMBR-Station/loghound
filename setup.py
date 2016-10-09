@@ -6,6 +6,7 @@ Usage:
 """
 
 from setuptools import setup
+import macholib_patch
 
 APP = ['src/LogHound.py']
 DATA_FILES = []
