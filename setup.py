@@ -7,9 +7,9 @@ Usage:
 
 from setuptools import setup
 
-APP = ['LogHound.py']
+APP = ['src/LogHound.py']
 DATA_FILES = []
-OPTIONS = {'argv_emulation': False, 'iconfile': 'loghound.icns'}
+OPTIONS = {'argv_emulation': False, 'iconfile': 'icons/loghound.icns'}
 
 setup(
     name="LogHound",
