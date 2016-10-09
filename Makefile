@@ -5,12 +5,13 @@ all: LogHound.app LogHound.dmg
 dist:
 	mkdir dist
 
-icons:
+icons/loghound.icns:
 	cd icons; make
 
-LogHound.app:
+LogHound.app: icons/loghound.icns
+	python setup.py py2app
 
-LogHound.dmg: LogHound.app dist icons
+LogHound.dmg: LogHound.app dist 
 	hdiutil create -imagekey zlib-level=9 -srcfolder dist/LogHound.app dist/LogHound.dmg
 
 clean:
