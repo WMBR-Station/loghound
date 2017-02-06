@@ -43,15 +43,17 @@ def generateLogs(argv, printcmd, location="./"):
   import json
   
   show_data = "web"
-  
+
+  local_url = 'http://localhost/templogs.php?start_year=%d&start_month=%d&start_day=%d&num_days=%d'
+  web_url = 'http://www.wmbr.org/~lowe/templogs.php?start_year=%d&start_month=%d&start_day=%d&num_days=%d'
   if show_data == "web":
     printcmd("Downloading schedule...")
-    sched_raw = unicode(urllib.urlopen('http://www.wmbr.org/~lowe/templogs.php?start_year=%d&start_month=%d&start_day=%d&num_days=%d' % (year,month,day,numdays)).read(), "iso-8859-1")
+    sched_raw = unicode(urllib.urlopen(web_url % (year,month,day,numdays)).read(), "iso-8859-1")
     printcmd("Done.\n")
   
   elif show_data == "web-local": 
     printcmd("Downloading schedule...")
-    sched_raw = unicode(urllib.urlopen('http://localhost/templogs.php?start_year=%d&start_month=%d&start_day=%d&num_days=%d' % (year,month,day,numdays)).read(), "iso-8859-1")
+    sched_raw = unicode(urllib.urlopen(local_url % (year,month,day,numdays)).read(), "iso-8859-1")
     printcmd("Done.\n")
 
   elif show_data == "local":
@@ -64,6 +66,9 @@ def generateLogs(argv, printcmd, location="./"):
   printcmd("Adding shows...")
   
   schedule = json.loads(sched_raw)
+  if "error" in schedule:
+    raise(Exception("Error in Retrieving Program Schedule",schedule["error"]))
+
   for date_str in schedule:
     year  = int(date_str.split("-")[0])
     month = int(date_str.split("-")[1])
