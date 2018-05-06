@@ -198,7 +198,8 @@ def make_day_tables(showsAndEvents):
     tables = []
     fullShowsAndEvents = list(fill_in_spaces(showsAndEvents))
 
-    for i, (previous,event,next) in enumerate(trigrams(fullShowsAndEvents)):
+    showidx = 0 
+    for previous,event,next in trigrams(fullShowsAndEvents):
 
         if isinstance(event, model.show) or isinstance(event, model.freeblock):
             show = event
@@ -207,9 +208,10 @@ def make_day_tables(showsAndEvents):
                 kwargs['include_signon'] = True
             if isinstance(next, model.signoff):
                 kwargs['include_signoff'] = True
+            
+	    tables.append(make_show_table(show, use_grey_background=showidx%2 , **kwargs))
+    	    showidx += 1
 
-            tables.append(make_show_table(show, use_grey_background=i%2 , **kwargs))
-    
     return tables
 
 if __name__ == "__main__":

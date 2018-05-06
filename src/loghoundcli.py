@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 import argparse 
 import urllib
@@ -44,18 +44,22 @@ def generateLogs(argv, printcmd, location="./"):
   #       output things this way, we should put out an XML file! 
   if args.source == "web-live":
     printcmd("Downloading schedule...")
-    sched_raw = unicode(urllib.urlopen(web_url % (args.year,args.month,args.day,args.numdays)).read(), "iso-8859-1")
+    url = web_url % (args.year,args.month,args.day,args.numdays)
+    printcmd("URL: %s" % url)
+    sched_raw = unicode(urllib.urlopen(url).read(), "iso-8859-1")
     printcmd("Done.\n")
   
   elif args.source == "web-local": 
     printcmd("Downloading schedule...")
-    sched_raw = unicode(urllib.urlopen(local_url % (args.year,args.month,args.day,args.numdays)).read(), "iso-8859-1")
+    url = local_url % (args.year,args.month,args.day,args.numdays)
+    printcmd("URL: %s" % url)
+    sched_raw = unicode(urllib.urlopen(url).read(), "iso-8859-1")
     printcmd("Done.\n")
 
   elif args.source == "local":
     if args.input is None:
        raise Exception("[error] must specify input file if local source is selected")
-	   
+
     printcmd("Loading schedule from local file...")
     sched_raw = "".join(codecs.open(args.input, "r", encoding='iso-8859-1').readlines())
     printcmd("Done.\n")
