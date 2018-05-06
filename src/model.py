@@ -1,5 +1,29 @@
 import datetime
 
+class freeblock:
+
+    def __init__(self,start,end):
+        self._start = start
+        self._end = end
+        self.engineer = ''
+        self.producer = ''
+        self.announcer = ''
+        self.name = ''
+
+    def start(self):
+        return self._start
+
+    def end(self):
+        return self._end
+
+    def getXmlSafeName(self):
+      return "&amp;".join(self.name.split("&"))
+
+    def __repr__(self):
+        s = "<empty>\n"
+        s += "%s - %s\n" % (self._start,self._end)
+        return s
+
 class show:    
     '''
     a record class for radio shows as they appear in the programming logs.
@@ -15,17 +39,32 @@ class show:
         producer/announcer - string. use commas to separate multiple people.
         '''
         self.name      = name
-        self.start     = start 
-        self.end       = end
+        self._start     = start
+        self._end       = end
         self.engineer  = engineer
         self.producer  = producer
         self.announcer = announcer
         # note: using a datetime for self.start doesn't make sense to
         # me, because self.start represents a periodic starting time,
         # not a datetime point. 
+    def start(self):
+        return self._start
+
+    def end(self):
+        return self._end
+
+
     def getXmlSafeName(self):
       return "&amp;".join(self.name.split("&"))
-        
+
+    def __repr__(self):
+        s = "%s\n" % self.name
+        s += "%s - %s\n" % (self._start,self._end)
+        s += "eng: %s\n" % self.engineer
+        s += "prod: %s\n" % self.producer
+        s += "ann: %s\n" % self.announcer
+        return s
+
 class signon:
     '''
     represents a normal transmission signon event, as 
@@ -38,12 +77,30 @@ class signon:
         is between 0 and 59 
         '''
         self.time = time
-        
+
+    def start(self):
+        return self.time
+
+    def end(self):
+        return self.time
+
+    def __repr__(self):
+        return "signon @ %s\n" % self.time
+
 class signoff:
     'represents a normal transmission signoff event.'
     def __init__(self, time):
         self.time = time
 
+
+    def start(self):
+        return self.time
+
+    def end(self):
+        return self.time
+
+    def __repr__(self):
+        return "signoff @ %s\n" % self.time
 ###### sample shows
 
 # baseline

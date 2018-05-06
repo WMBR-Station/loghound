@@ -172,7 +172,7 @@ def generateLogs(argv, printcmd, location="./"):
       if len(elt.strip()) > 0:
         eltList.append(Paragraph(paraPrefix + elt, styles['Normal']))
     data = [
-        ["Henry Holtzman", "Home: 617-327-1298", "Work: 617-253-0319"],
+        ["Brian Sennett", "", "Cell: 845-891-4649"],
         ["Ted Young",      "Home: 617-776-7473", "Cell: 617-447-8439"] ]
     eltList.append(Table(data, style=[('SIZE',(0,0),(-1,-1),12)]))
     return eltList

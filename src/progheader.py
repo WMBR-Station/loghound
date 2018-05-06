@@ -77,7 +77,8 @@ BLANK_ENGINEER_RINDENT = 70
 MAX_ANNOUNCER_WIDTH = 250
 MAX_PRODUCER_WIDTH  = 250
 MAX_ENGINEER_WIDTH  = 170
-# note: max char bookkeeping is not the best way to go. max rendered widths  
+MAX_STUDIO_WIDTH  = 170
+# note: max char bookkeeping is not the best way to go. max rendered widths
 # would be better, as it's insenstive to changes in font and style.
 # (see note above on challenges.)
 # however, the log font sizes we use won't ever be changing radically, 
@@ -100,30 +101,53 @@ def make_header_table(show):
     if len(show.name) >= MAX_SHOW_CHARS:
         # issue warning
         print "warning: this show's name might be too long: "+show.name
-    
+
+    def width(p):
+        p.wrap(1e10,None)
+        return sum(p.getActualLineWidths0())
+
     def truncate_if_needed(s, maxwidth, makeparagraph, singular_label, plural_label):
         # if something is too big to fit in the table,
         # return an empty string instead. 
         #
         # note: it'd be better to use the actual rendering
         # size than the character length. see note above:
-        # i couldn't get it working for paragraphs. 
-	def width(p):
-	  p.wrap(1e10,None)
-	  return sum(p.getActualLineWidths0())
-      	if type(s) == unicode:
-	  i = len(s)
-	  if width(makeparagraph(singular_label, s)) > maxwidth:
-	    i -= 1
-	    while i>0 and width(makeparagraph(singular_label, s[:i] + "...")) > maxwidth:
-	      i -= 1
-	    if i == 0:
-	      return makeparagraph(singular_label, "")
-	    return makeparagraph(singular_label, s[:i] + "...")
-	  return makeparagraph(singular_label, s)
-        else:
-          i = 0
-          return [st for st in map(lambda i: makeparagraph(((i==1) and singular_label) or plural_label, ", ".join(s[:i] + ((i < len(s) and ["<i>et al</i>"]) or []))), xrange(len(s)+1)) if width(st) <= maxwidth][-1]
+        # i couldn't get it working for paragraphs.
+        label = singular_label if len(s) == 1 else plural_label
+
+        def make_text(s,n):
+
+            if n == len(s) or len(s) == 1:
+                return ", ".join(s)
+            elif len(s) > 1:
+                return ", ".join(s[:n]) + ' <i>et al</i>'
+
+        if len(s) == 0:
+            return makeparagraph(label,"")
+
+        for offset in range(0,len(s)):
+            n = len(s) - offset
+            if width(makeparagraph(label,make_text(s,n))) <= maxwidth:
+                return makeparagraph(label,make_text(s,n))
+
+        raise Exception("could not fit in <%d> : <%s> [%d]" %
+                        (maxwidth,make_text(s,len(s)),width(makeparagraph(label,make_text(s,len(s))))))
+        #if width(makeparagraph(singular_label, s)) > maxwidth:
+        #    i -= 1
+        #    while i>0 and width(makeparagraph(singular_label, s[:i] + "...")) > maxwidth:
+        #        i -= 1
+
+	    #   if i == 0:
+        #        return makeparagraph(singular_label, "")
+        #
+        #    return makeparagraph(singular_label, s[:i] + "...")
+
+        #    return makeparagraph(singular_label, s)
+
+        #else:
+        #  i = 0
+
+        #return [st for st in map(lambda i: makeparagraph(((i==1) and singular_label) or plural_label, ", ".join(s[:i] + ((i < len(s) and ["<i>et al</i>"]) or []))), xrange(len(s)+1)) if width(st) <= maxwidth][-1]
         
     def make_field(label, value, align='left'):
         if not value.strip():
@@ -136,7 +160,7 @@ def make_header_table(show):
             extra_attrs = ''
         text = '<para align=%s %s><i>%s:</i> %s</para>' % (align, extra_attrs, label, value)
         p = Paragraph(text, STYLES['Normal'])
-	return p
+        return p
     
     def make_title(name):
         if len(name) < MAX_SHOW_CHARS:            
@@ -147,17 +171,24 @@ def make_header_table(show):
         return Paragraph(
             '<para size="%d"><b>%s</b></para>' % (fontsize, name),
             STYLES['Normal'])
-        
-    title = make_title(show.getXmlSafeName())
+
+    if show.name == '':
+        title = make_field('Title','',align='left')
+    else:
+        title = make_title(show.getXmlSafeName())
     
-    engineer  = truncate_if_needed(show.engineer, MAX_ENGINEER_WIDTH, lambda l,v: make_field(l, v), "Engineer", "Engineers")
-    producer  = truncate_if_needed(show.producer, MAX_PRODUCER_WIDTH, lambda l,v: make_field(l, v), "Producer", "Producers")
-    announcer = truncate_if_needed(show.announcer, MAX_ANNOUNCER_WIDTH, lambda l,v: make_field(l, v), "Announcer", "Announcers")
-    
+    engineer  = truncate_if_needed(show.engineer, MAX_ENGINEER_WIDTH,
+                                   lambda l,v: make_field(l, v), "Engineer", "Engineers")
+    producer  = truncate_if_needed(show.producer, MAX_PRODUCER_WIDTH,
+                                   lambda l,v: make_field(l, v), "Producer", "Producers")
+    announcer = truncate_if_needed(show.announcer, MAX_ANNOUNCER_WIDTH,
+                                   lambda l,v: make_field(l, v), "Announcer", "Announcers")
+
+    studio = make_field('Control Room','',align="left")
     data = [
-        [title, engineer],            
+        [title, engineer],
         # these empty '' cells are required by reportlab's span mechanism
-        [producer, ''],
+        [producer, studio],
         [announcer, '']
     ]
     
@@ -168,8 +199,7 @@ def make_header_table(show):
         ('BOTTOMPADDING', (0,0), (-1,-1), 0),            
         ('TOPPADDING', (0,0), (-1,0), TITLE_TOP_PADDING),    
         ('BOTTOMPADDING', (0,0), (-1,0), TITLE_BOTTOM_PADDING),
-        ('SPAN', (0,1), (1,1)), 
-        ('SPAN', (0,2), (1,2)),                     
+        ('SPAN', (0,2), (1,2)),
         # comment-in the grid to get a better picture of the table structure
         #('GRID', (0,0), (-1,-1), .6, colors.black),                    
     ]
