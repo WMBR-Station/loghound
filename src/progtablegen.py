@@ -121,6 +121,7 @@ def make_show_table(show, use_grey_background=False, include_signon=False, inclu
 
 def make_signon_row(time, row):
     return make_signinoff_row(time, row, True)    
+
 def make_signoff_row(time, row):    
     return make_signinoff_row(time, row, False)
 
@@ -173,14 +174,13 @@ def fill_in_spaces(showsAndEvents):
             hours = curr.start().hour
             begin = curr.start() - timedelta(hours=curr.start().hour)
 
-        #raw_input()
 
         for hour_offset in range(0,hours):
             start = begin + timedelta(hours=hour_offset)
             end = begin + timedelta(hours=hour_offset+1)
             print("%s - %s" % (start,end))
             yield model.freeblock(start,end)
-            yield model.signoff(end)
+            #yield model.signoff(end)
 
 
         yield curr
