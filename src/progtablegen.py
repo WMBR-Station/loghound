@@ -169,17 +169,21 @@ def fill_in_spaces(showsAndEvents):
             diff = curr.start() - prev.end()
             if diff.total_seconds() > 0:
                 hours = int(diff.total_seconds()/3600)
-                begin = prev.end()
+                start = prev.end()
         else:
             hours = curr.start().hour
-            begin = curr.start() - timedelta(hours=curr.start().hour)
+            start = curr.start() - timedelta(hours=curr.start().hour)
 
-
-        for hour_offset in range(0,hours):
-            start = begin + timedelta(hours=hour_offset)
-            end = begin + timedelta(hours=hour_offset+1)
-            print("%s - %s" % (start,end))
-            yield model.freeblock(start,end)
+	for hour_offset in range(0,hours):
+	    # if the starting time is not on the hour, make the next blank slot round out the hour.
+	    assert(start.second == 0)
+	    if start.minute > 0:
+	        end = start + timedelta(minutes=60-start.minute)
+	    else:
+		end = start + timedelta(hours=1)
+	
+	    yield model.freeblock(start,end)
+	    start = end
             #yield model.signoff(end)
 
 
@@ -205,14 +209,6 @@ def make_day_tables(showsAndEvents):
                 kwargs['include_signoff'] = True
 
             tables.append(make_show_table(show, use_grey_background=i%2 , **kwargs))
-
-        # if isinstance(obj, model.show):
-        #     tables.append(make_show_table(obj, i%2))
-        # if isinstance(obj, model.signon):
-        #     tables.append(make_sign_table(obj.time, True))            
-        # if isinstance(obj, model.signoff):
-        #     tables.append(make_sign_table(obj.time, False))            
-        #tables.append(Spacer(0,1))
     
     return tables
 

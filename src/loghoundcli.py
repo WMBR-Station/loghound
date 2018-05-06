@@ -1,64 +1,63 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+import argparse 
+import urllib
+import codecs
+import model
+import json
+import calendar
+import datetime
+
 def generateLogs(argv, printcmd, location="./"):
   # FIRST, figure out what days we are going to be printing logs for
-  import calendar
-  import datetime
   
+  phpquery = 'templogs.php?start_year=%d&start_month=%d&start_day=%d&num_days=%d'
+  local_url = 'http://localhost/%s' % phpquery 
+  web_url = 'http://www.wmbr.org/~lowe/%s' % phpquery
+
   calendar.setfirstweekday(calendar.SUNDAY)
   
-  if len(argv) < 4:
-    printcmd("should be:\n\t%s <year> <month> <day> [number of days]\n" % argv[0])
-    return
-  
-  year  = int(argv[1])
-  month = int(argv[2])
-  day   = int(argv[3])
-  today = datetime.datetime(year,month,day)
-  
-  numdays = 7
-  try:
-    numdays = int(argv[4])
-  except IndexError:
-    pass
-  except ValueError:
-    pass
-  
+  parser = argparse.ArgumentParser(description="loghound: generates program and operating logs")
+  parser.add_argument("year", type=int, help="the year of the log to create.") 
+  parser.add_argument("month", type=int, help="the month of the log to create.") 
+  parser.add_argument("day", type=int, help="the starting day of the log to create.") 
+  parser.add_argument("numdays", type=int, default=7,help="the number of days to generate..") 
+  parser.add_argument("-s","--source",choices=["web-live","local","web-local"], default="web-live", 
+		  help="source to get programming guide information from.")
+  parser.add_argument("-i","--input", type=str, help="programming guide file (if local source is selected")
+
+ 
+  args = parser.parse_args()
+  today = datetime.datetime(args.year,args.month,args.day)
+
   if today.weekday() != calendar.SUNDAY:
     printcmd("This is supposed to start on a Sunday.  I assume you know what you're doing.\n")
   
-  dates = [today + datetime.timedelta(i) for i in xrange(numdays)]
+  dates = [today + datetime.timedelta(i) for i in xrange(args.numdays)]
   progEvents = dict([(date,[]) for date in dates])
   opEvents = dict([(date,[]) for date in dates])
   
   # SECOND, download the schedule
   # TODO: get rid of this and just talk to the database or whatever directly if
   #       that's at all possible!  This is a little silly!  If we're going to
-  #       output things this way, we should put out an XML file!
-  
-  import urllib
-  import codecs
-  import model
-  import json
-  
-  show_data = "web"
-
-  local_url = 'http://localhost/templogs.php?start_year=%d&start_month=%d&start_day=%d&num_days=%d'
-  web_url = 'http://www.wmbr.org/~lowe/templogs.php?start_year=%d&start_month=%d&start_day=%d&num_days=%d'
-  if show_data == "web":
+  #       output things this way, we should put out an XML file! 
+  if args.source == "web-live":
     printcmd("Downloading schedule...")
-    sched_raw = unicode(urllib.urlopen(web_url % (year,month,day,numdays)).read(), "iso-8859-1")
+    sched_raw = unicode(urllib.urlopen(web_url % (args.year,args.month,args.day,args.numdays)).read(), "iso-8859-1")
     printcmd("Done.\n")
   
-  elif show_data == "web-local": 
+  elif args.source == "web-local": 
     printcmd("Downloading schedule...")
-    sched_raw = unicode(urllib.urlopen(local_url % (year,month,day,numdays)).read(), "iso-8859-1")
+    sched_raw = unicode(urllib.urlopen(local_url % (args.year,args.month,args.day,args.numdays)).read(), "iso-8859-1")
     printcmd("Done.\n")
 
-  elif show_data == "local":
-    printcmd("Using cached schedule (probably not what you want)...")
-    sched_raw = "".join(codecs.open("sched/templogs_sample", "r", "iso-8859-1" ).readlines())
+  elif args.source == "local":
+    if args.input is None:
+       raise Exception("[error] must specify input file if local source is selected")
+	   
+    printcmd("Loading schedule from local file...")
+    sched_raw = "".join(codecs.open(args.input, "r", encoding='iso-8859-1').readlines())
     printcmd("Done.\n")
   
   timestrtodelta = lambda timestr: datetime.timedelta(0, sum(map(lambda x,y: int(x)*y, timestr.split(":"), [60*60,60])))
@@ -75,8 +74,19 @@ def generateLogs(argv, printcmd, location="./"):
     day   = int(date_str.split("-")[2])
     date = datetime.datetime(year,month,day)
     for show in schedule[date_str]:
+     
+      if not date in progEvents:
+	mindate,maxdate = min(progEvents.keys()),max(progEvents.keys())
+	raise Exception("The programming log date <%s> cannot be used to generate the date range <%s, %s>" % 
+			(date,mindate,maxdate))
+
+      if not date in opEvents:
+	mindate,maxdate = min(opEvents.keys()),max(opEvents.keys())
+	raise Exception("The programming log date <%s> cannot be used to generate the date range <%s, %s>" % 
+			(date,mindate,maxdate))
+
       if show["type"] == "show":
-        progEvents[date].append(model.show(
+	progEvents[date].append(model.show(
           show["show_name"],
           date+timestrtodelta(show["start_time"]),
           date+timestrtodelta(show["end_time"]),
