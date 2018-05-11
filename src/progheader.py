@@ -92,7 +92,7 @@ FONT_SUBTRACTION = 2
 # TODO: base or sample styles? or should we make our own?
 STYLES=getSampleStyleSheet()
 
-def make_header_table(show):
+def make_header_table(show,alternates=False,freeblock=False):
     '''
     make_header_table takes a show as input and returns the header
     as a Table.    
@@ -151,10 +151,10 @@ def make_header_table(show):
         
     def make_field(label, value, align='left'):
         if not value.strip():
-            value = ''       
-            # this extra attr doesn't affect left-aligned fields. 
+            value = ''
+            # this extra attr doesn't affect left-aligned fields.
             # it does affect the right-aligned engineer field: if the engineer
-            # is blank, it'll rindent the field to make space for manual recording.  
+            # is blank, it'll rindent the field to make space for manual recording.
             extra_attrs = 'rindent="%s"' % BLANK_ENGINEER_RINDENT
         else:
             extra_attrs = ''
@@ -162,12 +162,17 @@ def make_header_table(show):
         p = Paragraph(text, STYLES['Normal'])
         return p
     
+    def make_note(label,align='left',extra_attrs=''):
+        text = '<para align=%s %s>%s</para>' % (align, extra_attrs, label)
+ 	p = Paragraph(text, STYLES['Normal'])
+        return p
+
     def make_title(name):
-        if len(name) < MAX_SHOW_CHARS:            
-            fontsize = TITLE_FONTSIZE 
+        if len(name) < MAX_SHOW_CHARS:
+            fontsize = TITLE_FONTSIZE
         else:
             fontsize = TITLE_FONTSIZE-FONT_SUBTRACTION
-        
+
         return Paragraph(
             '<para size="%d"><b>%s</b></para>' % (fontsize, name),
             STYLES['Normal'])
@@ -176,7 +181,7 @@ def make_header_table(show):
         title = make_field('Title','',align='left')
     else:
         title = make_title(show.getXmlSafeName())
-    
+
     engineer  = truncate_if_needed(show.engineer, MAX_ENGINEER_WIDTH,
                                    lambda l,v: make_field(l, v), "Engineer", "Engineers")
     producer  = truncate_if_needed(show.producer, MAX_PRODUCER_WIDTH,
@@ -184,12 +189,19 @@ def make_header_table(show):
     announcer = truncate_if_needed(show.announcer, MAX_ANNOUNCER_WIDTH,
                                    lambda l,v: make_field(l, v), "Announcer", "Announcers")
 
-    studio = make_field('Control Room','',align="left")
+    studio = make_field('Control Room','_'*7,align="left")
+
+    freeblock_maybe = ''
+    if freeblock:
+       freeblock_maybe = make_note('<b>[unscheduled broadcast]</b>',align="right")
+    elif alternates:
+       freeblock_maybe = make_note('<b>[alternating show]</b>',align="right")
+
     data = [
-        [title, engineer],
+        [title, freeblock_maybe],
         # these empty '' cells are required by reportlab's span mechanism
-        [producer, studio],
-        [announcer, '']
+        [producer,engineer],
+        [announcer,studio]
     ]
     
     tstyles = [
@@ -199,7 +211,8 @@ def make_header_table(show):
         ('BOTTOMPADDING', (0,0), (-1,-1), 0),            
         ('TOPPADDING', (0,0), (-1,0), TITLE_TOP_PADDING),    
         ('BOTTOMPADDING', (0,0), (-1,0), TITLE_BOTTOM_PADDING),
-        ('SPAN', (0,2), (1,2)),
+        #('SPAN', (0,2), (1,2)),
+        ('SPAN', (0,2), (0,2)),
         # comment-in the grid to get a better picture of the table structure
         #('GRID', (0,0), (-1,-1), .6, colors.black),                    
     ]

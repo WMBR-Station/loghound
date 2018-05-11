@@ -25,8 +25,8 @@ DST_ZONE            = 4
 def offset(date):
   # daylight saving time begins on the second sunday of march
   # daylight saving time ends   on the first  sunday of november
-  a = day_of_year([datetime.date(date.year,03,i) for i in xrange(1,32) if
-        datetime.date(date.year,03,i).weekday() == calendar.SUNDAY][1])
+  a = day_of_year([datetime.date(date.year,3,i) for i in xrange(1,32) if
+        datetime.date(date.year,3,i).weekday() == calendar.SUNDAY][1])
   b = day_of_year([datetime.date(date.year,11,i) for i in xrange(1,31) if
         datetime.date(date.year,11,i).weekday() == calendar.SUNDAY][0])
   if day_of_year(date) >= a and day_of_year(date) < b:

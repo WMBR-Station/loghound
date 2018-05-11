@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 progtablegen generates WMBR's programming tables. It consists of one function:
@@ -32,16 +32,16 @@ from pprint import pprint
 # TODO
 
 ########### API 
-def make_prog_table(events):
-  rvalue = []
-  for event in events:
-    if event[1] == "show":
-      rvalue.append(Table([event[3]]))
-    elif event[1] == "altshow":
-      pass
-    else:
-      pass
-  return rvalue
+#def make_prog_table(events):
+#  rvalue = []
+#  for event in events:
+#    if event[1] == "show":
+#      rvalue.append(Table([event[3]]))
+#    elif event[1] == "altshow":
+#      pass
+#    else:
+#      pass
+#  return rvalue
 
 #########
 
@@ -51,7 +51,7 @@ styles=getSampleStyleSheet()
 from progheader import make_header_table
 
 
-def make_show_table(show, use_grey_background=False, include_signon=False, include_signoff=False):
+def make_show_table(show, use_grey_background=False, include_signon=False, include_signoff=False, alternates=False, freeblock=False):
     'makes a table for a single radio show'
     cwidths = [.5*inch, .75*inch, 1.25*inch, 3.8*inch, 1.25*inch]
     
@@ -59,7 +59,7 @@ def make_show_table(show, use_grey_background=False, include_signon=False, inclu
     end   = show.end().strftime("%H:%M")
         
     hour_range = "%s\n–\n%s" % (start, end)
-    header = make_header_table(show)
+    header = make_header_table(show,freeblock=freeblock,alternates=alternates)
     
     data = [
         [hour_range, header, '', '', ''], 
@@ -68,7 +68,7 @@ def make_show_table(show, use_grey_background=False, include_signon=False, inclu
     tstyles = [
         ('BOX', (0,0), (-1,-1), 3, colors.black),
         ('FONTSIZE', (0,0), (0,0), 13),
-        ('TOPPADDING', (0,0), (0,0), -1),        
+        ('TOPPADDING', (0,0), (0,0), -1),
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('TOPPADDING', (1,0), (2,0), 5),   
@@ -137,13 +137,13 @@ def make_signinoff_row(time, row, is_signon):
     tstyles = [
            ('ALIGN', (0,row), (0,row), 'CENTER'),
            ('ALIGN', (1,row), (1,row), 'LEFT'),
-           ('ALIGN', (3,row), (3,row), 'RIGHT'),           
+           ('ALIGN', (3,row), (3,row), 'RIGHT'),
            # ('GRID', (0,row), (-1,row), .5, colors.black),
            # ('LINEAFTER', (2, row), (2, row), 1, colors.white),
-           # ('LINEABOVE', (2, row), (3, row), 1, colors.black),                      
+           # ('LINEABOVE', (2, row), (3, row), 1, colors.black),
            ('SPAN', (1,row), (2,row)),
            ('SPAN', (3, row), (4, row)),
-           # ('BOX', (1,0), (-1,0), .5, colors.black),                
+           # ('BOX', (1,0), (-1,0), .5, colors.black),
     ]
     return data_row, tstyles
 
@@ -186,17 +186,19 @@ def fill_in_spaces(showsAndEvents):
 	    start = end
             #yield model.signoff(end)
 
-
         yield curr
 
 
-def make_day_tables(showsAndEvents):    
+def make_day_tables(showsAndEvents,add_blanks=False):    
     '''
     showsAndEvents: a list of show, signon and signoff objects
     returns a list of tables, one table per page. 
     '''
     tables = []
-    fullShowsAndEvents = list(fill_in_spaces(showsAndEvents))
+    if add_blanks:
+        fullShowsAndEvents = list(fill_in_spaces(showsAndEvents))
+    else:
+        fullShowsAndEvents = list(showsAndEvents)
 
     showidx = 0 
     for previous,event,next in trigrams(fullShowsAndEvents):
@@ -208,7 +210,11 @@ def make_day_tables(showsAndEvents):
                 kwargs['include_signon'] = True
             if isinstance(next, model.signoff):
                 kwargs['include_signoff'] = True
-            
+	    if isinstance(event,model.show):
+		kwargs['alternates'] = event.alternates()
+	    if isinstance(event,model.freeblock):
+		kwargs['freeblock'] = True
+
 	    tables.append(make_show_table(show, use_grey_background=showidx%2 , **kwargs))
     	    showidx += 1
 

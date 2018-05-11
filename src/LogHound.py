@@ -50,9 +50,10 @@ class LogHound(tk.Frame):
     self.genButton['state'] = 'disabled'
     def subgen():
       try:
+        argv = ["tk",y,m,d,7]
         generateLogs(["tk", y, m, d], self.printcmd, dirname + "/")
       except Exception as e:
-	self.printcmd("\n>>>> ERROR: \n " + str(e) + "\n")
+        self.printcmd("\n>>>> ERROR: \n " + str(e) + "\n")
       self.genButton['state'] = 'normal'
     genThread = threading.Thread(target=subgen)
     genThread.start()

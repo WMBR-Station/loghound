@@ -44,9 +44,16 @@ class show:
         self.engineer  = engineer
         self.producer  = producer
         self.announcer = announcer
+        self._alternates = False
         # note: using a datetime for self.start doesn't make sense to
         # me, because self.start represents a periodic starting time,
         # not a datetime point. 
+
+    def alternates(self,value=None):
+       if not value is None:
+          self._alternates = value 
+       return self._alternates 
+
     def start(self):
         return self._start
 
