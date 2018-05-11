@@ -9,8 +9,11 @@
     Licence:        free
     Requirements:   Python,Tkinter
 '''
+try:
+    import tkinter as tk
+except Exception:
+    import Tkinter as tk
 
-import Tkinter as tk
 from calendar import setfirstweekday, monthcalendar, monthrange, month_abbr
 
 class TkCalendar(tk.Frame):
@@ -31,7 +34,7 @@ class TkCalendar(tk.Frame):
             relief=tk.FLAT).pack(side=tk.LEFT)
         self.l = tk.Label(f)
         self.l.pack(side=tk.LEFT,expand="yes",fill='x')
-	self.__redrawlabel()
+        self.__redrawlabel()
         tk.Button(f,
             text='>',
             command=self.__increase,
@@ -78,7 +81,7 @@ class TkCalendar(tk.Frame):
             self.month = 12
         else:
             self.month -= 1
-	self.__redrawlabel()
+        self.__redrawlabel()
         self.__fill_canvas()
    
     def __increase(self):
@@ -88,7 +91,7 @@ class TkCalendar(tk.Frame):
             self.month = 1
         else:
             self.month += 1
-	self.__redrawlabel()
+        self.__redrawlabel()
         self.__fill_canvas()
    
     def __click(self,event):
@@ -115,7 +118,7 @@ class TkCalendar(tk.Frame):
 
     def chosenDay(self):
       if self.chosenrow is None:
-	return None
+         return None
       import datetime
       x = datetime.datetime(self.year,self.month,1)
       x += datetime.timedelta(self.chosenrow * 7)

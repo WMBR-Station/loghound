@@ -1,7 +1,12 @@
 #!/usr/bin/env python
+try:
+    import tkinter as tk
+    import tkinter.filedialog as tk_filedialog
+except:
+    import Tkinter as tk
+    from Tkinter import TclError as tk_error
+    import tkFileDialog as tk_filedialog
 
-import Tkinter as tk
-import tkFileDialog
 from TkCalendar import TkCalendar
 from loghoundcli import *
 from time import localtime
@@ -32,28 +37,39 @@ class LogHound(tk.Frame):
 
   def printcmd(self,x):
     self.log['state'] = 'normal'
-    self.log.insert('end', x)
+    self.log.insert('end', "%s\n" % x)
     self.log['state'] = 'disabled'
     self.log.yview(tk.MOVETO, 1)
+    print("[LOG]: %s" % x)
 
   def generate(self):
     if self.calendar.chosenrow is None:
-      self.printcmd("Please select a week.\n")
+      self.printcmd("Please select a week.")
       return
-    dirname = tkFileDialog.askdirectory(parent=self, initialdir="/", title="Please select a directory to write to")
+    dirname = tk_filedialog.askdirectory(parent=self, initialdir="/",
+                                         title="Please select a directory to write to")
     if len(dirname.strip()) == 0:
-      self.printcmd("Please select a directory to write the log to!\n")
+      self.printcmd("Please select a directory to write the log to!")
       return
-    self.printcmd("Writing to %s\n" % dirname)
+    self.printcmd("Writing to %s" % dirname)
     y,m,d = self.calendar.chosenDay()
-    self.printcmd("*"*23 + " log for week starting %4d/%02d/%02d " % (y,m,d) + "*"*23 + "\n")
+    self.printcmd("*"*23 + " log for week starting %4d/%02d/%02d " % (y,m,d) + "*"*23)
     self.genButton['state'] = 'disabled'
+
     def subgen():
       try:
-        argv = ["tk",y,m,d,7]
-        generateLogs(["tk", y, m, d], self.printcmd, dirname + "/")
+
+          argv = ["%d" % y,
+                  "%d" % m,
+                  "%d" % d,
+                  "%d" % 7,
+                  '--alt','--blank','--source',"web-live"]
+
+          generateLogs(argv, self.printcmd, dirname)
+
       except Exception as e:
         self.printcmd("\n>>>> ERROR: \n " + str(e) + "\n")
+
       self.genButton['state'] = 'normal'
     genThread = threading.Thread(target=subgen)
     genThread.start()
@@ -64,8 +80,8 @@ if __name__ == '__main__':
   c = LogHound(root)
   c.pack()
   try: 
-      root.tk.call('console', 'hide') 
-  except Tkinter.TclError: 
+      root.tk.call('console', 'hide')
+  except tk_error:
       # Some versions of the Tk framework don't have a console object 
       pass 
   root.mainloop()

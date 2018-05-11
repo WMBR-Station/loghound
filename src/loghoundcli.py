@@ -50,7 +50,8 @@ def generateLogs(argv, printcmd, location="."):
   parser.add_argument("-i","--input", type=str, help="programming guide file (if local source is selected")
 
 
-  args = parser.parse_args()
+  args = parser.parse_args(argv)
+  printcmd("<args>: %s" % args)
   today = datetime.datetime(args.year,args.month,args.day)
 
   if today.weekday() != calendar.SUNDAY:

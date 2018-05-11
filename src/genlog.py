@@ -86,9 +86,10 @@ def generateLog(printcmd,logEvents,today,numdays,location='.',oplog=True,add_bla
 
   ## The operating log
 
-  printcmd("Writing operating log...")
+  printcmd(">> Building PDF File of Log <<")
 
   if oplog:
+	  printcmd("Writing operating log...")
 	  doc = BaseDocTemplate(location+"/oplog.pdf",showBoundary=0,allowSplitting=0,leftMargin=0.5*inch,rightMargin=0.5*inch,topMargin=1.4*inch,bottomMargin=0.5*inch)
 
 	  frameNormal = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='normal')
@@ -121,17 +122,17 @@ def generateLog(printcmd,logEvents,today,numdays,location='.',oplog=True,add_bla
 	  Elements.extend(rulesPage())
 
 	  for date in dates:
-	    Elements.append(flowables.DocAssign("currentYear",  date.year))
-	    Elements.append(flowables.DocAssign("currentMonth", date.month))
-	    Elements.append(flowables.DocAssign("currentDay",   date.day))
-	    tables = progtablegen.make_day_tables(logEvents[date],add_blanks=add_blanks)
+            Elements.append(flowables.DocAssign("currentYear",  date.year))
+            Elements.append(flowables.DocAssign("currentMonth", date.month))
+            Elements.append(flowables.DocAssign("currentDay",   date.day))
+            tables = progtablegen.make_day_tables(logEvents[date],add_blanks=add_blanks)
 
             Elements.append(NextPageTemplate('OTALogPage'))
-	    Elements.append(PageBreak())
-	    Elements.append(SigPage())
-	    Elements.append(NextPageTemplate('ProgLogPage'))
-	    Elements.append(PageBreak())
-	    Elements.extend(tables)
+            Elements.append(PageBreak())
+            Elements.append(SigPage())
+            Elements.append(NextPageTemplate('ProgLogPage'))
+            Elements.append(PageBreak())
+            Elements.extend(tables)
 
 	  doc.addPageTemplates([PageTemplate(id='Title',frames=frameNormal,onPage=title("WMBR Programming Log"),pagesize=letter),
 				PageTemplate(id='OTALogPage',frames=frameNormal,onPage=foot("WMBR Programming Log"),pagesize=letter),
