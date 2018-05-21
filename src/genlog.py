@@ -89,7 +89,7 @@ def generateLog(printcmd,logEvents,today,numdays,location='.',oplog=True,add_bla
   printcmd(">> Building PDF File of Log <<")
 
   if oplog:
-	  printcmd("Writing operating log...")
+          printcmd("Writing operating log to <%s/oplog.pdf>" % (location))
 	  doc = BaseDocTemplate(location+"/oplog.pdf",showBoundary=0,allowSplitting=0,leftMargin=0.5*inch,rightMargin=0.5*inch,topMargin=1.4*inch,bottomMargin=0.5*inch)
 
 	  frameNormal = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='normal')
@@ -114,7 +114,7 @@ def generateLog(printcmd,logEvents,today,numdays,location='.',oplog=True,add_bla
 				PageTemplate(id='OpLogPage',frames=frameNormal,onPage=foot("WMBR Operating Log"),pagesize=letter)
 				])
   else:
-	  printcmd("Writing programming log...")
+          printcmd("Writing programming log: <%s/proglog.pdf>" % location)
 	  doc = BaseDocTemplate(location+"/proglog.pdf",showBoundary=0,allowSplitting=0,leftMargin=0.5*inch,rightMargin=0.5*inch,topMargin=1.4*inch,bottomMargin=0.5*inch)
 
 	  frameNormal = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='normal')
@@ -144,10 +144,10 @@ def generateLog(printcmd,logEvents,today,numdays,location='.',oplog=True,add_bla
 
 
 def generateProgLog(printcmd,progEvents,today,numdays,location='.',add_blanks=False):
-   generateLog(printcmd,progEvents,today,numdays,location='.',
+   generateLog(printcmd,progEvents,today,numdays,location=location,
                oplog=False,add_blanks=add_blanks)
 
 def generateOpLog(printcmd,opEvents,today,numdays,location='.'):
-   generateLog(printcmd,opEvents,today,numdays,location='.',
+   generateLog(printcmd,opEvents,today,numdays,location=location,
                oplog=True)
 

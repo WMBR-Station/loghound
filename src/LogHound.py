@@ -65,7 +65,7 @@ class LogHound(tk.Frame):
                   "%d" % 7,
                   '--alt','--blank','--source',"web-live"]
 
-          generateLogs(argv, self.printcmd, dirname)
+          generateLogs(argv, self.printcmd, location=dirname)
 
       except Exception as e:
         self.printcmd("\n>>>> ERROR: \n " + str(e) + "\n")

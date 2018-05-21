@@ -57,6 +57,7 @@ def generateLogs(argv, printcmd, location="."):
   if today.weekday() != calendar.SUNDAY:
     printcmd("This is supposed to start on a Sunday.  I assume you know what you're doing.\n")
 
+  printcmd("<loc>: %s" % (location))
   printcmd("Adding shows...")
   progEvents,opEvents = getlog.load(printcmd,args.source,today,args.numdays)
 
@@ -83,4 +84,4 @@ if __name__ == '__main__':
   def printcmd(x):
     sys.stderr.write("%s\n" % x)
     sys.stderr.flush()
-  generateLogs(sys.argv, printcmd)
+  generateLogs(sys.argv[1:], printcmd)
