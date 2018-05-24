@@ -3,7 +3,9 @@
 SVGFILE=loghound.svg
 BASEFILE=loghound
 
-all:
+all: ${BASEFILE}.icns
+
+${BASEFILE}.icns:
 	convert ${SVGFILE} -resize 16x16 ${BASEFILE}16.png
 	convert ${SVGFILE} -resize 32x32 ${BASEFILE}32.png
 	convert ${SVGFILE} -resize 48x48 ${BASEFILE}48.png
